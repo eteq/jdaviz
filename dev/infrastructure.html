@@ -1,0 +1,159 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>jdaviz Design and Infrastructure &#8212; jdaviz v0.1.dev92+g1c68e6d.d20190905</title>
+    <link rel="stylesheet" href="../_static/jdaviz.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <script type="text/javascript" src="../_static/sidebar.js"></script>
+    <script type="text/javascript" src="../_static/copybutton.js"></script>
+    <link rel="shortcut icon" href="../_static/astropy_logo.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="prev" title="jdaviz Python Documentation" href="../notebook/index.html" />
+    <link href='https://fonts.googleapis.com/css?family=Source+Sans+Pro:200,600' rel='stylesheet' type='text/css'/>
+
+  </head><body>
+<div class="topbar">
+  <a class="brand" title="Documentation Home" href="../index.html"><span id="logotext1">jda</span><span id="logotext2">viz</span><span id="logotext3">:docs</span></a>
+  <ul>
+    
+    <li><a class="homelink" title="Astropy Homepage" href="http://www.astropy.org"></a></li>
+    <li><a title="General Index" href="../genindex.html">Index</a></li>
+    <li><a title="Module Index" href="../py-modindex.html">Modules</a></li>
+    <li>
+      
+      
+<form action="../search.html" method="get">
+  <input type="text" name="q" placeholder="Search" />
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+      
+    </li>
+  </ul>
+</div>
+
+<div class="related">
+    <h3>Navigation</h3>
+    <ul>
+      <li class="right">
+	<a href="../notebook/index.html" title="jdaviz Python Documentation">
+	  &laquo; previous
+	</a>
+	
+      </li>
+      <li>
+	<a href="../index.html">jdaviz v0.1.dev92+g1c68e6d.d20190905</a>
+	 &#187;
+      </li>
+      
+      <li>jdaviz Design and Infrastructure</li> 
+    </ul>
+</div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="jdaviz-design-and-infrastructure">
+<h1>jdaviz Design and Infrastructure<a class="headerlink" href="#jdaviz-design-and-infrastructure" title="Permalink to this headline">¶</a></h1>
+<p>This document outlines the top-level structure of jdaviz. At the highest level, jdaviz layers different, sometimes changing technologies in the Jupyter platform to do its visualization, and therefore provides a framework for these technologies to work together.  This document describes that framework, as well as the high-level sets of components needed for the jdaviz use cases at the time of this document’s writing. Bear in mind, though, that the fast moving scientific and technical fields jdaviz is aimed at mean that some of the specific details in this document may change faster than the document can be kept up, so the high-level structure is the primary focus of this document, with the specific components best thought of as <em>examples</em> rather than a comprehensive list of all components implemented.  (For that, see the documentation itself).</p>
+<p>This document lists the layers of the <a class="reference internal" href="../notebook/index.html#module-jdaviz" title="jdaviz"><code class="xref py py-obj docutils literal notranslate"><span class="pre">jdaviz</span></code></a> framework in essentially the order in which they contact users in a typical visualization-heavy workflow.  These layers are: interfaces, applications, component widgets, and libraries. An overview of the layers is in this diagram, and each is described in more detail below:</p>
+<img alt="../_images/jdaviz.svg" src="../_images/jdaviz.svg" /><div class="section" id="interfaces">
+<h2>Interfaces<a class="headerlink" href="#interfaces" title="Permalink to this headline">¶</a></h2>
+<p>“Interfaces” are the tool the user is using to access the analysis tools. The word “platform” might at first seem more applicable, but in this case all of the interfaces are using Jupyter as the platform, to ensure a consistent look-and-feel and a single platform for which to target the tools.  The interfaces are then specific interfaces through which users access this platform.  The target interfaces are:</p>
+<ul class="simple">
+<li><p><strong>Notebook</strong>: while the actual app the user is running may be either <a class="reference external" href="https://jupyterlab.readthedocs.io">JupyterLab</a> or the “classic” <a class="reference external" href="https://jupyter-notebook.readthedocs.io/en/stable/">Jupyter Notebook</a>, the interface idiom is similar - a relatively linear notebook-style workflow. Lower layers are viewed .  This is the most flexible interface as it allows the user to implement their own code free-form in the notebook and it with cells using jdaviz tools.  Hence this layer particularly emphasizes modularity and flexibility.</p></li>
+<li><p><strong>Desktop app</strong>: this interface is meant to behave like a more traditional “desktop app”, meaning a window with a fixed set of functionality and a particular layout for a specific set of scientific use cases.  This interface is accessed via an <a class="reference external" href="https://electronjs.org/">Electron</a>  wrapper that loads the same machinery as other interfaces but presents the outputs of notebook “cells” as the only view. This trades the flexibility of the notebook interface for a consistent and reproducible layout and simpler interface without the distraction of the notebook and associated code.</p></li>
+<li><p><strong>Embedded web site/”MAST”</strong>: this interface embeds particular jdaviz applications inside existing web sites.  This provides the capabilities of the jdaviz tools in other web sites (e.g., <a class="reference external" href="http://archive.stsci.edu/">the Mikulski Archive for Space Telescopes</a>), while providing the sites the freedom to be designed and laid out independently from the visualization tool framework.  While this even further restricts the functionality, it provides maximum flexibility in embedding.</p></li>
+</ul>
+<p>Each of these interfaces uses a common set of applications implemented in Python and leverging <a class="reference external" href="https://ipywidgets.readthedocs.io">ipywidgets</a> as the communication layer between Python and the javascript-level layout, rendering, and iteractivity libraries. Hence the following layers are primarily implemented in Python, but utilize tools like <a class="reference external" href="https://github.com/mariobuikhuizen/ipyvuetify">ipyvuetify</a> and <a class="reference external" href="https://github.com/nmearl/ipygoldenlayout">ipygoldenlayout</a> to allow the Python code to interact with the javascript implementations at the interface level.</p>
+</div>
+<div class="section" id="applications">
+<h2>Applications<a class="headerlink" href="#applications" title="Permalink to this headline">¶</a></h2>
+<p>The next layer is the “Application” layer. These applications in and of themselves do not implement significant functionality, but are particular layouts that combine the lower layers (primarily component widgets) to accomplish specific visualization tasks. They have particular science goals that are then mainly reflected in the capabilities of the lower layers, but the functionality in those widgets are connected together to solve those goals in the applications. The desktop app and embedded web site interfaces will typically wrap exactly one of these applications, while the notebook’s additional flexibility means it may include multiple applications, or a mix of applications and individual widgets.</p>
+<p>Specific target applications include:</p>
+<ul class="simple">
+<li><p><em>specviz</em>: this application provides a view into a single astronomical spectrum.  It provides a UI to view the spectrum, as well as perform common scientific operations like marking spectral regions for further analysis (in e.g. a notebook), subtracting continuua, measuring and fitting spectral lines, etc.</p></li>
+<li><p><em>mosviz</em>: this application provides a view into many astronomical spectra, typically the output of a multi-object spectrograph (e.g. <a class="reference external" href="https://jwst.nasa.gov/content/observatory/instruments/nirspec.html">JWST NIRSpec</a>).  It provides capabilities for individual spectra like specviz, but for multiple spectra at a time along with additional contextual information like on-sky views of the spectrograph slit.</p></li>
+<li><p><em>cubeviz</em>: this application provides a view of spectroscopic data cubes (like those to be produced by <a class="reference external" href="https://jwst.nasa.gov/content/observatory/instruments/miri.html">JWST MIRI</a>), along with 1d spectra extracted from the cube. In addition to common visualization capabilities like viewing slices or averages in image or wavelength space, the application will provide some standard manipulations like smoothing, moment maps, parallelized line fitting, etc.</p></li>
+<li><p><em>imviz</em>: this application provides an image-viewer for 2d images leveraging the same machinery as the other applications.  While this application is not intended to encapsulate a complete range of astronomical imaging-based workflows, it enables quick-look style visualization of images in a way that is compatible with the rest of the jdaviz framework.</p></li>
+</ul>
+<div class="section" id="application-engine">
+<h3>Application Engine<a class="headerlink" href="#application-engine" title="Permalink to this headline">¶</a></h3>
+<p>The applications are driven by a shared layer that connects the “high-level” layers to the “low-level” layers discussed below.  The application engine manages both configuration of the UI for the application and the data used by the application and in its component widgets.  Note that this “cofiguration” should be thought of as a <em>description</em> of the layout, because the layout itself is done at the javascript level by the Jupyter platform tools mentioned above in the interfaces section. The application engine is responsible for providing a way to express this desired layout, as well as a standard way for the interfaces to access and render applications. More concretely, the application engine is the Python-level object that can be “shown” in any of the interfaces to actually interact with a particular application. The primary library this application engine depends on is the <a class="reference external" href="https://github.com/glue-viz/glue-jupyter">glue-jupyter</a> package, along with its underlying <a class="reference external" href="https://github.com/glue-viz/glue">glue-core</a> library.</p>
+</div>
+</div>
+<div class="section" id="component-widgets">
+<h2>Component Widgets<a class="headerlink" href="#component-widgets" title="Permalink to this headline">¶</a></h2>
+<p>The “component widget” layer is the first of the “low-level” layers - i.e., the layers that actual implement specific visualization and analysis functionality. These widgets are self-contained and while they are meant to be composed in applications, for the notebook interface component widgets can and should be used directly by users for specialized scientific workflows.  Component widgets in principle can be developed in any framework that can be exposed as an <code class="xref py py-obj docutils literal notranslate"><span class="pre">ipywidgets</span></code> widget, although currently the plan is that most will be <a class="reference external" href="https://github.com/glue-viz/glue-jupyter">glue-jupyter</a> viewers combined with <a class="reference external" href="https://github.com/mariobuikhuizen/ipyvuetify">ipyvuetify</a> layouts.</p>
+<p>Known component widgets for the target applications include:</p>
+<ul class="simple">
+<li><p><em>1d plotter</em>: a widget that shows a 1d astronomical data set, primarily aimed at astronomical spectra.  Interactivity includes panning, zooming, and region marking.</p></li>
+<li><p><em>2d viewer</em>: a widget to show an astronomical image, along with its on-sky coordinates when WCS are available. Interactivity includes panning, zooming, and “stretch” (contrast, scale, and cut value).</p></li>
+<li><p><em>3d slicer</em>: a widget for displaying slices or similar aggregate operations on spectroscopic data cubes.  While similar to the 2d viewer in appearence and interactive capabilities, the core difference is that the main data object is expected to be a data cube rather than a 2d image, and this is reflected in additional aggregation/slicing operations.</p></li>
+<li><p><em>Table viewer</em>: a widget to show tabular datasets like astropy <code class="xref py py-obj docutils literal notranslate"><span class="pre">Table</span></code> objects. Primarily meant to be combined with other viewers to examine the complete set of properties from a selection made in another viewer.  Interactivty focuses on sorting and selection of specific rows (to then be highlighted in other viewers or interacted with in a notebook).</p></li>
+</ul>
+</div>
+<div class="section" id="libraries">
+<h2>Libraries<a class="headerlink" href="#libraries" title="Permalink to this headline">¶</a></h2>
+<p>The above layers are focused primaril on visualization.  All actual <em>operations</em> and analysis tasks to be applied to visualized data sets are to be implemented in the various Python libraries aimed at these astronomical datasets. It is important to note that these libraries are <em>independent</em> efforts from jdaviz, and can therefore be used in whole, part, or not at all with the jdaviz tools. This allows a full range of workflows, while also maintaining transparency to scientific users exactly how an operation in the jdaviz tools actually works.  I.e., they can at any time simply use the library directly instead of accessing it through jdaviz.  Known libraries include:</p>
+<ul class="simple">
+<li><p><a class="reference external" href="http://astropy.org">astropy</a></p></li>
+<li><p><a class="reference external" href="https://specutils.readthedocs.io">specutils</a></p></li>
+<li><p><a class="reference external" href="https://spectral-cube.readthedocs.io">spectral-cube</a> and/or <a class="reference external" href="https://docs.sunpy.org/projects/ndcube">NDCube</a></p></li>
+<li><p><a class="reference external" href="https://photutils.readthedocs.io">photutils</a></p></li>
+</ul>
+<p>Note that those libraries themselve depend on the wider scientific Python ecosystem, so this is by no means a comprehensive list of the libraries jdaviz depends on.  But these are the primary “top-level” libraries, meaning it is these that most users are likely to focus on to parallel or extend their jdaviz workflows.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><h3>Page Contents</h3>
+<ul>
+<li><a class="reference internal" href="#">jdaviz Design and Infrastructure</a><ul>
+<li><a class="reference internal" href="#interfaces">Interfaces</a></li>
+<li><a class="reference internal" href="#applications">Applications</a><ul>
+<li><a class="reference internal" href="#application-engine">Application Engine</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#component-widgets">Component Widgets</a></li>
+<li><a class="reference internal" href="#libraries">Libraries</a></li>
+</ul>
+</li>
+</ul>
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+<footer class="footer">
+  <p class="pull-right">
+    <a href="../_sources/dev/infrastructure.rst.txt"
+       rel="nofollow">Page Source</a> &nbsp;
+    <a href="#">Back to Top</a></p>
+  <p>
+    &copy; Copyright 2019, JDADF.<br/>
+    Created using <a href="http://www.sphinx-doc.org/en/stable/">Sphinx</a> 2.1.2. &nbsp;
+    Last built 05 Sep 2019. <br/>
+  </p>
+</footer>
+  </body>
+</html>
