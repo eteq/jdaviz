@@ -278,7 +278,7 @@ class Application(VuetifyTemplate, HubListener):
         """
         return self._viewer_by_reference(viewer_reference)
 
-    def get_data_from_viewer(self, viewer_reference, data_label='None',
+    def get_data_from_viewer(self, viewer_reference, data_label=None,
                              cls='default', include_subsets=True):
         """
         Returns each data component currently rendered within a viewer
@@ -368,7 +368,10 @@ class Application(VuetifyTemplate, HubListener):
 
         # If a data label was provided, return only the data requested
         if data_label is not None:
-            return data.get(data_label)
+            if data_label in data:
+                data = {data_label: data.get(data_label)}
+            else:
+                data = {}
 
         return data
 
@@ -404,7 +407,7 @@ class Application(VuetifyTemplate, HubListener):
         viewer = self.get_viewer(viewer_reference)
         data = self.get_data_from_viewer(viewer_reference,
                                          data_label,
-                                         cls=None)
+                                         cls='default')
         regions = {}
 
         for key, value in data.items():
