@@ -1,9 +1,12 @@
 import numpy as np
 
-from jdaviz.core.helpers import ConfigHelper
-from jdaviz.core.events import SnackbarMessage
 from astropy.table import QTable
 import astropy.units as u
+
+from jdaviz.core.helpers import ConfigHelper
+from jdaviz.core.events import SnackbarMessage
+from jdaviz.configs.specviz import SpecViz
+
 
 
 class MosViz(ConfigHelper):
@@ -234,3 +237,12 @@ class MosViz(ConfigHelper):
             data_dict[cid.label] = comp.data * unit
 
         return QTable(data_dict)
+
+    @property
+    def specviz(self):
+        """
+        A specviz helper for the app this helper wraps
+        """
+        if not hasattr(self, '_specviz'):
+            self._specviz = SpecViz(app=self.app)
+        return self._specviz
